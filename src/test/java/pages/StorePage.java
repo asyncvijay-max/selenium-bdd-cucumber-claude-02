@@ -2,8 +2,13 @@ package pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StorePage extends BasePage {
+
+    private static final Logger log = LoggerFactory.getLogger(StorePage.class);
+
     public StorePage(WebDriver driver) {
         super(driver);
     }
@@ -22,7 +27,10 @@ public class StorePage extends BasePage {
 
     public void searchForTheProduct(String product)
     {
+        log.info("Searching for product: {}", product);
       driver.findElement(searchTextBox).sendKeys(product);
+
+        log.info("clicking on the search button");
       driver.findElement(searchButton).click();
     }
 
@@ -34,6 +42,8 @@ public class StorePage extends BasePage {
     public void addTheProductToTheCart(String productName)  {
         // We are dynamically selecting the locator based on product name
          By addProductToCart = By.cssSelector("[aria-label='Add “"+productName+"” to your cart']");
+
+        log.info("clicking on the add to product button");
         driver.findElement(addProductToCart).click();
 
         //slight delay for view cart link to appear
@@ -46,6 +56,7 @@ public class StorePage extends BasePage {
 
     public void clickOnViewCartLink()
     {
+        log.info("click on View Cart Link");
         driver.findElement(viewCartLink).click();
         //This takes us to Cart Page
     }

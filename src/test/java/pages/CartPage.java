@@ -5,8 +5,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CartPage extends BasePage{
+
+    private static final Logger log = LoggerFactory.getLogger(CartPage.class);
+
     public CartPage(WebDriver driver) {
         super(driver);
     }
@@ -22,11 +27,14 @@ public class CartPage extends BasePage{
     //ACTIONS
     public void clickOnCheckOutButton()
     {
-     wait.until(ExpectedConditions.elementToBeClickable(checkOutBtn)).click();
+
+        log.info("click on the CheckOut Button");
+        wait.until(ExpectedConditions.elementToBeClickable(checkOutBtn)).click();
     }
 
     public String getTextProductInTheCart()
     {
+        log.info("Extracting Product Text ,added in the Cart for Assertion");
         return driver.findElement(productNameInTheCart).getText();
     }
 

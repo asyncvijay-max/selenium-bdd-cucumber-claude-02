@@ -4,8 +4,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CheckOutPage extends BasePage{
+
+    private static final Logger log = LoggerFactory.getLogger(CheckOutPage.class);
+
     public CheckOutPage(WebDriver driver) {
         super(driver);
     }
@@ -31,17 +36,20 @@ public class CheckOutPage extends BasePage{
 
     public void enterFirstName(String fname)
     {
+        log.info("Entering First name..");
         //driver.findElement(firstNameTxt).sendKeys(fname);
         wait.until(ExpectedConditions.visibilityOfElementLocated(firstNameTxt)).sendKeys(fname);
     }
 
     public void enterLastName(String lname)
     {
+        log.info("Entering Last name..");
         //driver.findElement(lastNameTxt).sendKeys(lname);
         wait.until(ExpectedConditions.visibilityOfElementLocated(lastNameTxt)).sendKeys(lname);
     }
     public void enterbillingAddress(String billAddress)
     {
+        log.info("Entering Street details..");
         //driver.findElement(billingAddressTxt).sendKeys(billAddress);
        WebElement e = wait.until(ExpectedConditions.visibilityOfElementLocated(billingAddressTxt));
        e.clear();
@@ -50,6 +58,7 @@ public class CheckOutPage extends BasePage{
 
     public void enterbillingCity(String city)
     {
+        log.info("Entering billing city..");
         //driver.findElement(billingCityTxt).sendKeys(city);
         WebElement e = wait.until(ExpectedConditions.visibilityOfElementLocated(billingCityTxt));
         e.clear();
@@ -58,7 +67,7 @@ public class CheckOutPage extends BasePage{
     public void enterPostalCode(String zipcode)
     {
 
-
+        log.info("Entering Postal Code..");
         //driver.findElement(postCodeTxt).sendKeys(zipcode);
 
         WebElement e = wait.until(ExpectedConditions.visibilityOfElementLocated(postCodeTxt));
@@ -68,6 +77,8 @@ public class CheckOutPage extends BasePage{
     }
     public void enterEmail(String email)
     {
+        log.info("Entering Email..");
+
         //driver.findElement(emailTxt).sendKeys(email);
 
         WebElement e = wait.until(ExpectedConditions.visibilityOfElementLocated(emailTxt));
@@ -90,6 +101,8 @@ public class CheckOutPage extends BasePage{
 
     public void placeOrder()
     {
+
+        log.info("click on Place Order Button..");
         //driver.findElement(placeOrderBtn).click();
          wait.until(ExpectedConditions.elementToBeClickable(placeOrderBtn)).click();
 
