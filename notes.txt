@@ -459,3 +459,13 @@ private WebDriver createEdge(boolean headless) {
     return new EdgeDriver(options);
 }
 ===============================================
+
+FOR HEADLESS execution,make sure to add,else it will fail
+
+if (headless) {
+    driver.manage().window().setSize(new Dimension(1920, 1080));
+} else {
+    driver.manage().window().maximize();
+}
+
+=============================================================

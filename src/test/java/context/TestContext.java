@@ -2,6 +2,7 @@ package context;
 
 import config.ConfigReader;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
@@ -61,7 +62,9 @@ public class TestContext {
                         "Unsupported browser: '" + browser + "'. Use chrome, firefox or edge.");
         }
 
-        if (!headless) {
+        if (headless) {
+            driver.manage().window().setSize(new Dimension(1920, 1080));
+        } else {
             driver.manage().window().maximize();
         }
 

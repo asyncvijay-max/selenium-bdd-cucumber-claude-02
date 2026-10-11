@@ -21,6 +21,6 @@ public class BasePage {
     public void loadPage(String endPoint)
     {
         driver.get(ConfigReader.getConfigReader().getBaseUrl()+endPoint);
-        driver.manage().window().maximize();
+        //driver.manage().window().maximize();
     }
 }
