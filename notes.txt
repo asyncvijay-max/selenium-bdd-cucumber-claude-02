@@ -1,3 +1,58 @@
+
+Repo1:
 https://github.com/asyncvijay-max/selenium-bdd-cucumber-claude-01.git
 
 C:\Users\vijay\OneDrive\Desktop\NewWorkArea\bdd-claude-demo\BDDcucumberbyclaude
+
+Most of things in it
+===================================================================================
+Repo2:
+https://github.com/asyncvijay-max/selenium-bdd-cucumber-claude-02.git
+
+C:\Users\vijay\OneDrive\Desktop\NewWorkArea\bdd-claude-demo2\selenium-bdd-cucumber-claude-01
+
+- starting from here, I added DataTableType, POJOS etc
+
+===================================================================================
+
+
+***********How does DataTableType is picked by Cucumber?
+
+Cucumber picks a transformer by its return type, and the method name doesn’t matter.
+
+At startup, Cucumber registers each @DataTableType method in a registry keyed by what it returns. When a step has a parameter of type BillingAddress, Cucumber looks up BillingAddress in that registry and calls the matching method. You could rename billingEntry to xyz and nothing would change.
+
+java
+@DataTableType
+public BillingAddress billingEntry(Map<String,String> row) { ... }   // registered for BillingAddress
+
+@DataTableType
+public Product productEntry(Map<String,String> row) { ... }          // registered for Product
+
+@DataTableType
+public Customer customerEntry(Map<String,String> row) { ... }        // registered for Customer
+
+(java)
+@And("Guest fills the billing address")
+public void fill(BillingAddress billing) { ... }   // → billingEntry
+
+@And("Guest adds products")
+public void add(List<Product> products) { ... }    // → productEntry, once per row
+
+Important logic for Parameter Type in DataTableType***
+The method’s parameter type tells Cucumber what slice of the table to give the method:
+
+Parameter type -	Transformer kind	- Receives
+Map<String,String> - 	Entry	-         One data row, keyed by header
+List<String> -     	    Row	                   -One row, without headers
+String	              - Cell	                           - A single cell
+DataTable - 	        Table	                    - The whole table
+
+Yours takes a Map, so it’s an entry transformer. That’s why the header names (firstName, street and so on) become the map keys.
+
+Single object vs list. The same entry transformer serves both of these step signatures:
+
+List<BillingAddress> calls the transformer once per data row.
+BillingAddress works only if the table has exactly one data row. Add a second row and Cucumber throws an error saying it can’t convert the table to a single object.
+
+Two transformers can’t share a type. If two @DataTableType methods both return BillingAddress as entry transformers, Cucumber can’t choose between them. It fails at startup with DuplicateTypeException, and it fails even if the two methods are in different files, because the registry is global across your whole glue path.
