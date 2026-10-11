@@ -1,3 +1,5 @@
+===================================================================================
+GIT HUB repos:
 
 Repo1:
 https://github.com/asyncvijay-max/selenium-bdd-cucumber-claude-01.git
@@ -5,7 +7,7 @@ https://github.com/asyncvijay-max/selenium-bdd-cucumber-claude-01.git
 C:\Users\vijay\OneDrive\Desktop\NewWorkArea\bdd-claude-demo\BDDcucumberbyclaude
 
 Most of things in it
-===================================================================================
+
 Repo2:
 https://github.com/asyncvijay-max/selenium-bdd-cucumber-claude-02.git
 
@@ -161,4 +163,299 @@ public class RunnerTest extends AbstractTestNGCucumberTests {
                 return super.scenarios();
 }
 }
-===================================================================================
+==============================TAGS=====================================================
+
+TO RUN scenarios using Tags :
+
+To run scenarios with either tag:
+
+@CucumberOptions(
+        features = "src/test/resources/features",
+        glue = {"hooks", "steps", "transformers"},
+        tags = "@searchproduct or @guestorder",
+        plugin = {
+                "pretty",
+                "html:target/cucumber-reports.html"
+        },
+        monochrome = true
+)
+
+Choose the word that matches what you want:
+
+Expression	Runs
+"@searchproduct or @guestorder"	 ----> Scenarios with either tag
+"@searchproduct and @guestorder"  ----> 	Only scenarios that have both tags
+"@searchproduct and not @guestorder" ----> 	@searchproduct scenarios, excluding @guestorder
+"(@searchproduct or @guestorder) and not @wip"
+
+
+How to select tags from mvn command like?
+
+Important:-Dcucumber.filter.tags=... on the command line overrides the tags in @CucumberOptions.
+          It replaces the runner’s tags; it doesn’t combine with them
+
+SYNTAX:
+In LINUX, below syntax:
+mvn test -Dcucumber.filter.tags="@searchproduct or @guestorder"
+
+In Windows power shell,below syntax:
+mvn test "-Dcucumber.filter.tags=@searchproduct"
+
+Important:
+The same applies to any other -D option with a dot in its name,
+like -Denv=uat (fine, no dot) versus -Dbase.url=... (needs quoting in PowerShell):
+
+powershell
+mvn test "-Dbase.url=https://qa.somesite.com"
+
+common tags:
+# Windows PowerShell  - means run every scenario except the ones marked in smoke.
+mvn test "-Dcucumber.filter.tags=not @smoke"
+============================================================================================
+
+Logic for getValue() method in Config Reader file
+
+Part 1: There are two places a value can come from
+
+Place 1: the properties file.
+When ConfigReader is created, this line copies everything from qa.properties into the properties object in memory:
+
+java
+properties.load(in);
+
+After that, properties holds:
+
+Key	Value
+baseUrl	https://askomdch.com
+browser	chrome
+headless	false
+
+Place 2: the command line.
+When you run:
+
+bash
+mvn test -Dbrowser=firefox
+
+the -Dbrowser=firefox part does not touch your properties file. Instead, Java stores it in a separate, built-in list called system properties. You read from that list with System.getProperty(...):
+
+java
+System.getProperty("browser");   // returns "firefox"
+
+So now there are two different answers to “which browser?”:
+
+Where	Value	How to read it
+Properties file	chrome	properties.getProperty("browser")
+Command line	firefox	System.getProperty("browser")
+
+Java doesn’t merge them for you. Your code decides which one to look at.
+
+Part 2: What your current code does
+
+Your getter:
+
+java
+public String getBrowser() {
+    String browser = properties.getProperty("browser");
+    ...
+    return browser;
+}
+
+It only looks at Place 1, the file. It never calls System.getProperty, so it never sees the command-line value.
+
+Trace mvn test -Dbrowser=firefox:
+
+Java stores browser=firefox in system properties.
+ConfigReader loads qa.properties, so properties has browser=chrome.
+TestContext calls config.getBrowser().
+getBrowser() reads properties.getProperty("browser"), which is chrome.
+Chrome opens. Your -Dbrowser=firefox was ignored.
+
+No error appears, so it’s easy to think it worked.
+
+Part 3: You already use the fix for env
+
+Look at your constructor:
+
+java
+String env = System.getProperty("env", "qa");
+
+This is why -Denv=uat works. System.getProperty with two arguments means:
+
+Look for env on the command line. If it’s there, use it. If not, use "qa".
+
+Command	Result
+mvn test -Denv=uat	"uat" (from command line)
+mvn test	"qa" (the default)
+
+We just need the same idea for browser, except the default should be the value from the file instead of a fixed "qa".
+
+Part 4: The fix
+java
+private String getValue(String key) {
+    String value = System.getProperty(key, properties.getProperty(key));
+    if (value == null) {
+        throw new RuntimeException("Missing config value: " + key);
+    }
+    return value;
+}
+
+public String getBrowser() {
+    return getValue("browser");
+}
+
+Read the key line from the inside out:
+
+java
+System.getProperty(key, properties.getProperty(key));
+First, properties.getProperty("browser") gets the file’s value: "chrome".
+Then System.getProperty("browser", "chrome") means: use the command-line value if there is one, otherwise use "chrome".
+
+So the command line wins if present, and the file is the fallback.
+
+Part 5: Trace it again with the fix
+
+mvn test -Dbrowser=firefox:
+
+System properties have browser=firefox.
+The file has browser=chrome.
+getValue("browser") calls System.getProperty("browser", "chrome").
+The command line has a value, so it returns "firefox".
+Firefox opens.
+
+mvn test (no -Dbrowser):
+
+System properties have no browser.
+The file has browser=chrome.
+System.getProperty("browser", "chrome") finds nothing on the command line, so it returns the fallback "chrome".
+Chrome opens.
+Command	Command line value	File value	Result
+mvn test	(none)	chrome	chrome
+mvn test -Dbrowser=firefox	firefox	chrome	firefox
+mvn test -Dbrowser=edge	edge	chrome	edge
+
+An analogy
+
+The properties file is like the printed menu at a restaurant: it says the default meal. -Dbrowser=firefox is like telling the waiter “I’d like the fish instead.” Your current code only reads the menu and never listens to what you told the waiter. The fix makes the code listen to your request first, and fall back to the menu if you didn’t ask for anything.
+
+That’s also why the same getValue helper is used for baseUrl and headless: it lets you override any setting from the command line without editing the file.
+
+package config;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class ConfigReader {
+
+    // Singleton: created once, when the class is first used
+    private static final ConfigReader configReader = new ConfigReader();
+    private final Properties properties = new Properties();
+
+    private ConfigReader() {
+        // mvn test -Denv=uat  (default: qa)
+        String env = System.getProperty("env", "qa");
+        String filePath = "config/" + env + ".properties";
+
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(filePath)) {
+            if (in == null) {
+                throw new RuntimeException("Config file not found: " + filePath);
+            }
+            properties.load(in);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read config file: " + filePath, e);
+        }
+    }
+
+    public static ConfigReader getConfigReader() {
+        return configReader;
+    }
+
+    // Command line (-Dkey=value) first, then the properties file
+    private String getValue(String key) {
+        String value = System.getProperty(key, properties.getProperty(key));
+        if (value == null) {
+            throw new RuntimeException("Missing config value: " + key);
+        }
+        return value;
+    }
+
+    // Same, but returns defaultValue if the key isn't set anywhere
+    private String getValue(String key, String defaultValue) {
+        return System.getProperty(key, properties.getProperty(key, defaultValue));
+    }
+
+    // e.g. https://askomdch.com
+    public String getBaseUrl() {
+        return getValue("baseUrl");
+    }
+
+    // e.g. chrome, firefox, edge
+    public String getBrowser() {
+        return getValue("browser");
+    }
+
+    // e.g. true or false (default false)
+    public boolean isHeadless() {
+        return Boolean.parseBoolean(getValue("headless", "false"));
+    }
+
+    // Password never stored in properties files: comes from an environment variable
+    public String getPassword() {
+        String pwd = System.getenv("APP_PASSWORD");
+        if (pwd == null) {
+            throw new RuntimeException("Set the APP_PASSWORD environment variable");
+        }
+        return pwd;
+    }
+}
+
+code change in TestContext - initial driver code:
+public void initialDriver() {
+    ConfigReader config = ConfigReader.getConfigReader();
+    String browser = config.getBrowser();
+    boolean headless = config.isHeadless();
+
+    switch (browser.toLowerCase()) {
+        case "chrome":
+            driver = createChrome(headless);
+            break;
+        case "firefox":
+            driver = createFirefox(headless);
+            break;
+        case "edge":
+            driver = createEdge(headless);
+            break;
+        default:
+            throw new IllegalArgumentException(
+                "Unsupported browser: '" + browser + "'. Use chrome, firefox or edge.");
+    }
+
+    if (!headless) {
+        driver.manage().window().maximize();
+    }
+}
+
+private WebDriver createChrome(boolean headless) {
+    ChromeOptions options = new ChromeOptions();
+    if (headless) {
+        options.addArguments("--headless=new", "--window-size=1920,1080");
+    }
+    return new ChromeDriver(options);
+}
+
+private WebDriver createFirefox(boolean headless) {
+    FirefoxOptions options = new FirefoxOptions();
+    if (headless) {
+        options.addArguments("-headless", "-width=1920", "-height=1080");
+    }
+    return new FirefoxDriver(options);
+}
+
+private WebDriver createEdge(boolean headless) {
+    EdgeOptions options = new EdgeOptions();
+    if (headless) {
+        options.addArguments("--headless=new", "--window-size=1920,1080");
+    }
+    return new EdgeDriver(options);
+}
+===============================================
