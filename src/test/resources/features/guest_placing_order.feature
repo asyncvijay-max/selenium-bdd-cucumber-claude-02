@@ -9,7 +9,7 @@ Feature: Guest places Order - E2E
     And Guest see the added product in the cart
     And Guest fills the billing address
       | firstName | lastName | street    | city     | zip   | email           |
-      | jimmy      | Ho   | 215 street | New York | 10002 | leee123e@testing.com |
+      | koran      | Ho   | 215 street | New York | 10002 | koree123e@testing.com |
     And Guest submits the Order
     Then Guest sees the order successfully
 

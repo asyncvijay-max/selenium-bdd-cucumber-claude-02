@@ -19,23 +19,31 @@ public class CheckOutPageSteps {
         this.context = context;
     }
 
-
-    @DataTableType
-    public BillingAddress billingEntry(Map<String,String> billingDetails)
-    {
-        return new BillingAddress(billingDetails.get("firstName"),
-                billingDetails.get("lastName"),
-                billingDetails.get("street"),
-                billingDetails.get("city"),
-                billingDetails.get("zip"),
-                billingDetails.get("email")
-                );
-    }
+//Moved to a separate package - transformers and then added it in glue in runner
+    //     glue = {"hooks","steps","transformers"},
+//    @DataTableType
+//    public BillingAddress billingEntry(Map<String,String> billingDetails)
+//    {
+//        return new BillingAddress(billingDetails.get("firstName"),
+//                billingDetails.get("lastName"),
+//                billingDetails.get("street"),
+//                billingDetails.get("city"),
+//                billingDetails.get("zip"),
+//                billingDetails.get("email")
+//                );
+//    }
 
 
     @And("Guest fills the billing address")
     public void guest_fills_the_billing_address(BillingAddress billing)
     {
+        // Since there is just one row with header, I have used  public void guest_fills_the_billing_address(BillingAddress billing)
+        //BillingAddress billing as Parameter . If I need to use more than one row along with header in the feature file,
+        //then I should have used List<BillingAddress billing> as Parameter ,No change to DataTableType Parameter
+        //And Guest fills the billing address
+      // | firstName | lastName | street    | city     | zip   | email           |
+        //    | koran      | Ho   | 215 street | New York | 10002 | koree123e@testing.com |
+
         //Map<String, String> billing = rows.get(0);
         String firstName = billing.getFirstName();
         String lastName  = billing.getLastName();
