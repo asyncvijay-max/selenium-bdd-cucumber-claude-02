@@ -1,10 +1,12 @@
 package steps;
 
 import context.TestContext;
+import io.cucumber.java.ParameterType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
+import pojos.ShoeColor;
 
 public class StorePageSteps {
 
@@ -16,12 +18,26 @@ public class StorePageSteps {
 
     }
 
-    @When("Guest search for {string}")
-    public void guest_search_for(String pname) throws InterruptedException {
-    context.getPageManager().getStorePage().searchForTheProduct(pname);
+
+    @ParameterType("\"([^\"]*)\"")
+   public ShoeColor shoecolor(String color)
+   {
+       return new ShoeColor(color);
+   }
+
+    @When("Guest search for {shoecolor}")
+    public void guest_search_for(ShoeColor color) throws InterruptedException {
+    context.getPageManager().getStorePage().searchForTheProduct(color.getShoeColor());
         Thread.sleep(2000);
 
     }
+
+//    @When("Guest search for {string}")
+//    public void guest_search_for(String pname) throws InterruptedException {
+//        context.getPageManager().getStorePage().searchForTheProduct(pname);
+//        Thread.sleep(2000);
+//
+//    }
 
     @Then("Guest is able to search successfully")
     public void guest_is_able_to_search_successfully() throws InterruptedException {
