@@ -1,6 +1,6 @@
 Feature: Add Product To Cart
 
-  @addproducttocart
+  @searchproduct
   Scenario: search a product by guest
     Given Guest reaches Store Page
     When Guest search for "blue"
