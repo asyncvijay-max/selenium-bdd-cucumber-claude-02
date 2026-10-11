@@ -2,6 +2,7 @@ package pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class CheckOutPage extends BasePage{
@@ -42,21 +43,38 @@ public class CheckOutPage extends BasePage{
     public void enterbillingAddress(String billAddress)
     {
         //driver.findElement(billingAddressTxt).sendKeys(billAddress);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(billingAddressTxt)).sendKeys(billAddress);
+       WebElement e = wait.until(ExpectedConditions.visibilityOfElementLocated(billingAddressTxt));
+       e.clear();
+       e.sendKeys(billAddress);
     }
 
     public void enterbillingCity(String city)
     {
         //driver.findElement(billingCityTxt).sendKeys(city);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(billingCityTxt)).sendKeys(city);
+        WebElement e = wait.until(ExpectedConditions.visibilityOfElementLocated(billingCityTxt));
+        e.clear();
+        e.sendKeys(city);
     }
     public void enterPostalCode(String zipcode)
     {
-        driver.findElement(postCodeTxt).sendKeys(zipcode);
+
+
+        //driver.findElement(postCodeTxt).sendKeys(zipcode);
+
+        WebElement e = wait.until(ExpectedConditions.visibilityOfElementLocated(postCodeTxt));
+        e.clear();
+        e.sendKeys(zipcode);
+
     }
     public void enterEmail(String email)
     {
-        driver.findElement(emailTxt).sendKeys(email);
+        //driver.findElement(emailTxt).sendKeys(email);
+
+        WebElement e = wait.until(ExpectedConditions.visibilityOfElementLocated(emailTxt));
+        e.clear();
+        e.sendKeys(email);
+
+
     }
 
     public void enterUserDetails(String fname,String lname,String bAddress,String city,String zipcode,String email)

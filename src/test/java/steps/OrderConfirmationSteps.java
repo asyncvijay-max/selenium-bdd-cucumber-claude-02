@@ -13,9 +13,9 @@ public class OrderConfirmationSteps {
     }
 
     @Then("Guest sees the order successfully")
-    public void guest_sees_the_order()
-    {
+    public void guest_sees_the_order() throws InterruptedException {
 
+        Thread.sleep(2000);
         //Assertion to see the msg "Thank you. Your order has been received." once order submitted
     context.getPageManager().getOrderConfirmationPage().checkTextOrderConfirmationMsg();
     }
